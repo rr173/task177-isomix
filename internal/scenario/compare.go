@@ -43,12 +43,14 @@ func Compare(base, projected map[string]model.Range) []Projection {
 }
 
 // MostSensitive chooses the source with the largest absolute width change.
+// Ties are resolved by the ascending source identifier, matching the rest of
+// the package, so a published explanation stays reproducible across runs.
 func MostSensitive(rows []Projection) string {
 	var selected string
 	max := -1.0
 	for _, row := range rows {
 		magnitude := math.Abs(row.DeltaWidth)
-		if magnitude > max || (magnitude == max && (selected == "" || row.ID > selected)) {
+		if magnitude > max || (magnitude == max && (selected == "" || row.ID < selected)) {
 			selected, max = row.ID, magnitude
 		}
 	}
