@@ -3,8 +3,11 @@ package scenario
 import "math"
 
 // SafeFraction clamps a ratio used by scenario summaries to [0,1].
+// A zero denominator has no observations, so it is reported as 0 rather
+// than NaN: coverage must be a bounded fraction and empty observations
+// must not look fully covered.
 func SafeFraction(numerator, denominator float64) float64 {
-	if denominator < 0 || math.IsNaN(numerator) || math.IsNaN(denominator) || math.IsInf(numerator, 0) || math.IsInf(denominator, 0) {
+	if denominator == 0 || denominator < 0 || math.IsNaN(numerator) || math.IsNaN(denominator) || math.IsInf(numerator, 0) || math.IsInf(denominator, 0) {
 		return 0
 	}
 	value := numerator / denominator
