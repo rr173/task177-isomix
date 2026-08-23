@@ -13,21 +13,23 @@ import (
 	"task177-isomix/internal/measure"
 	"task177-isomix/internal/model"
 	"task177-isomix/internal/report"
+	"task177-isomix/internal/sensitivity"
 	"task177-isomix/internal/solve"
 )
 
 // App 聚合各领域服务，供 handler 使用。
 type App struct {
-	Endmembers *endmember.Service
-	Measure    *measure.Service
+	Endmembers  *endmember.Service
+	Measure     *measure.Service
 	Constraints *constraint.Service
-	Solve      *solve.Service
-	Reports    *report.Service
+	Solve       *solve.Service
+	Reports     *report.Service
+	Sensitivity *sensitivity.Service
 }
 
 // NewApp 构造 App。
-func NewApp(em *endmember.Service, ms *measure.Service, cs *constraint.Service, sv *solve.Service, rp *report.Service) *App {
-	return &App{Endmembers: em, Measure: ms, Constraints: cs, Solve: sv, Reports: rp}
+func NewApp(em *endmember.Service, ms *measure.Service, cs *constraint.Service, sv *solve.Service, rp *report.Service, sens *sensitivity.Service) *App {
+	return &App{Endmembers: em, Measure: ms, Constraints: cs, Solve: sv, Reports: rp, Sensitivity: sens}
 }
 
 // Routes 注册全部路由，返回根 mux。
@@ -65,6 +67,8 @@ func (a *App) Routes() *http.ServeMux {
 	mux.HandleFunc("GET /api/solutions/{id}", a.getSolution)
 	mux.HandleFunc("GET /api/solutions/{id}/feasible-region", a.solutionFeasibleRegion)
 	mux.HandleFunc("GET /api/solutions/{id}/conflict-core", a.solutionConflictCore)
+	mux.HandleFunc("GET /api/solutions/{id}/sensitivity", a.solutionSensitivity)
+	mux.HandleFunc("GET /api/solutions/{id}/diagnostics", a.solutionDiagnostics)
 
 	// 报告
 	mux.HandleFunc("POST /api/reports", a.createReport)
@@ -73,11 +77,14 @@ func (a *App) Routes() *http.ServeMux {
 	mux.HandleFunc("POST /api/reports/{id}/publish", a.publishReport)
 	mux.HandleFunc("GET /api/reports/{id}/supersede-check", a.supersedeCheck)
 	mux.HandleFunc("GET /api/reports/{id}/diff", a.reportDiff)
+	mux.HandleFunc("GET /api/reports/{id}/provenance", a.reportProvenance)
+	mux.HandleFunc("GET /api/reports/{id}/export", a.reportExport)
 
 	// 自检与统计
 	mux.HandleFunc("GET /api/health", a.health)
 	mux.HandleFunc("GET /api/health/selfcheck", a.selfCheck)
 	mux.HandleFunc("GET /api/stats", a.stats)
+	mux.HandleFunc("GET /api/samples/{id}/uncertainty", a.sampleUncertainty)
 
 	return mux
 }

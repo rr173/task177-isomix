@@ -1,6 +1,8 @@
 # BENZHI 评测说明 · task177-isomix
 
 同位素混合来源约束求解服务（纯后端 Go，SQLite 持久化）。
+验收补齐了灵敏度/情景、样品不确定度、矩阵诊断、报告溯源与 JSON/CSV 导出能力，
+这些接口均由真实 HTTP mux 挂载并在 smoke 流程中复用同一求解结果。
 
 ## 构建与自检
 
@@ -15,6 +17,10 @@ GOTOOLCHAIN=local go run ./cmd/isomix --smoke-test
 bash build_benzhi_docker.sh task177-isomix linux/amd64
 bash build_benzhi_docker.sh task177-isomix linux/arm64
 ```
+
+新增分析接口：`GET /api/solutions/{id}/sensitivity`、`GET /api/solutions/{id}/diagnostics`、
+`GET /api/samples/{id}/uncertainty`、`GET /api/reports/{id}/provenance`，以及
+`GET /api/reports/{id}/export?format=json|csv`。
 
 ## --smoke-test 契约
 

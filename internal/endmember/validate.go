@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"task177-isomix/internal/model"
+	"task177-isomix/internal/validation"
 )
 
 // ValidateComponents 校验组成区间：
@@ -20,11 +21,7 @@ func ValidateComponents(components map[string]model.Range) error {
 	if len(components) == 0 {
 		return model.NewError("BAD_REQUEST", "at least one isotope component is required")
 	}
-	names := make([]string, 0, len(components))
-	for k := range components {
-		names = append(names, k)
-	}
-	sort.Strings(names)
+	names := validation.DimensionNames(components)
 	for _, name := range names {
 		r := components[name]
 		if math.IsNaN(r.Lo) || math.IsNaN(r.Hi) || math.IsInf(r.Lo, 0) || math.IsInf(r.Hi, 0) {

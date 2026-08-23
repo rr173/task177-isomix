@@ -12,6 +12,8 @@
 - 组件版本锁见 `component-versions.json`
 - 核心算法：自研两阶段单纯形法（`internal/lp`），Bland 规则防退化、
   容差 1e-9、NaN/Inf 一律判数值不稳定并附证据
+- 解释能力：`internal/sensitivity`、`calibration`、`scenario` 提供区间灵敏度、
+  标准测量漂移情景与可复现置信度；`uncertainty`、`diagnostics` 提供质量和矩阵风险摘要
 
 ## 快速开始
 
@@ -68,8 +70,11 @@ CGO_ENABLED=0 GOTOOLCHAIN=local go test  ./...
 | 求解提交/列表/查询 | POST|GET /api/solutions[/{id}] | httpapi/solution_api.go → solve.Service（LP） |
 | 可行域查询 | GET /api/solutions/{id}/feasible-region | solve → lp.Bounds |
 | 冲突核心查询 | GET /api/solutions/{id}/conflict-core | solve → minimalConflictCore（MUS） |
+| 灵敏度/矩阵诊断 | GET /api/solutions/{id}/sensitivity，GET .../diagnostics | sensitivity、scenario、diagnostics |
+| 样品不确定度 | GET /api/samples/{id}/uncertainty | uncertainty.Assess |
 | 报告创建/列表/查询 | POST|GET /api/reports[/{id}] | httpapi/report_api.go → report.Service |
 | 报告发布/过期检查/差异 | POST .../publish，GET .../supersede-check \| diff | 同上 |
+| 报告溯源/导出 | GET /api/reports/{id}/provenance，GET .../export?format=json\|csv | provenance、export |
 | 健康/自检/统计 | GET /api/health[/selfcheck]，GET /api/stats | httpapi/health_api.go |
 
 ## 目录结构

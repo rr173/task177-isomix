@@ -19,13 +19,18 @@ import (
 	"time"
 
 	"task177-isomix/internal/constraint"
+	"task177-isomix/internal/diagnostics"
 	"task177-isomix/internal/endmember"
+	"task177-isomix/internal/export"
 	"task177-isomix/internal/httpapi"
 	"task177-isomix/internal/measure"
 	"task177-isomix/internal/model"
+	"task177-isomix/internal/provenance"
 	"task177-isomix/internal/report"
+	"task177-isomix/internal/sensitivity"
 	"task177-isomix/internal/solve"
 	"task177-isomix/internal/store"
+	"task177-isomix/internal/uncertainty"
 )
 
 // signalChan 返回进程信号通道（SIGINT/SIGTERM 触发优雅关闭）。
@@ -93,7 +98,7 @@ func buildApp(st *store.Store) *httpapi.App {
 	cs := constraint.NewService(st.ConstraintStore, nil, nil)
 	sv := solve.NewService(st.SolutionStore, em, ms, cs, nil, nil)
 	rp := report.NewService(st.ReportStore, sv, em, cs, nil, nil)
-	return httpapi.NewApp(em, ms, cs, sv, rp)
+	return httpapi.NewApp(em, ms, cs, sv, rp, sensitivity.NewService(sv, nil))
 }
 
 // resumeIncomplete 恢复未完成求解并记录日志。
@@ -168,6 +173,14 @@ func runSmokeTest() error {
 	// 比例非负且和为一（抽查：各端元区间中值求和接近 1）。
 	sumOK := checkSumOne(b1)
 	assert(sumOK, "endmember bounds consistent with mass conservation")
+	// 派生解释能力必须与同一持久化求解协作，不能只存在于孤立工具包。
+	sensitivityReport, err := sensitivity.NewService(app.Solve, nil).Analyze(sol1.ID)
+	assert(err == nil && sensitivityReport.Feasible, "sensitivity report available")
+	assert(len(sensitivityReport.Bounds) == 3, "sensitivity covers each endmember")
+	uncertaintyReport := uncertainty.Assess(*sp)
+	assert(uncertaintyReport.PositiveDefinite, "sample uncertainty report accepts covariance")
+	diagnosticReport := diagnostics.Analyze(sol1)
+	assert(diagnosticReport.Risk == "normal" || diagnosticReport.Risk == "sparse-system", "solver diagnostics report low risk")
 
 	// 幂等：同一样品再次提交返回同一输入哈希结果。
 	sol1b, err := app.Solve.Submit(sp.ID)
@@ -200,6 +213,12 @@ func runSmokeTest() error {
 	_, err = app.Reports.Publish(rp1.ID)
 	assert(err == nil, "publish report v1")
 	assert(rp1.Status == model.ReportPublished || rp1.Status == model.ReportDraft, "report created")
+	provenanceSnapshot := provenance.BuildSnapshot(*rp1, rp1.CreatedAt)
+	assert(len(provenanceSnapshot.Events) == 5, "report provenance captures sample, endmembers and constraints")
+	jsonExport, err := export.JSON(*rp1)
+	assert(err == nil && len(jsonExport) > 0, "report JSON export available")
+	csvExport, err := export.CSV(*rp1)
+	assert(err == nil && len(csvExport) > 0, "report CSV export available")
 
 	// 7. 修订端元 -> 旧报告过期；重新提交产生新解（不改写旧报告）。
 	//    修订使端元回退为草拟，须重新校验并置为可用后才能再次参与求解。
