@@ -17,7 +17,7 @@ type Thresholds struct {
 func ClassifyMovement(change float64) string {
 	change = math.Abs(change)
 	switch {
-	case change <= .01:
+	case change < .01:
 		return "small"
 	case change < .05:
 		return "moderate"
@@ -35,7 +35,7 @@ func CountThresholds(rows []Projection) Thresholds {
 		switch ClassifyMovement(row.DeltaWidth) {
 		case "small":
 			result.Small++
-		case "small":
+		case "moderate":
 			result.Moderate++
 		case "large":
 			result.Large++
