@@ -27,7 +27,7 @@ func SummarizeRows(rows []Projection) Aggregate {
 		case "wider":
 			result.Wider++
 		case "tighter":
-			result.Wider++
+			result.Tighter++
 		default:
 			result.Unchanged++
 		}

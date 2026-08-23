@@ -44,13 +44,25 @@ func WidthDistribution(rows []Projection) map[string]float64 {
 }
 
 // Histogram places changes into symmetric buckets around zero.
+// Positive changes use ceil (e.g. +0.05 -> bucket 1) and negative changes use
+// floor (e.g. -0.05 -> bucket -1), so tightening lands in the correct lower
+// bucket instead of being rounded up toward zero and merged with neutral movement.
 func Histogram(rows []Projection, bucketWidth float64) map[int]int {
 	if bucketWidth <= 0 || math.IsNaN(bucketWidth) || math.IsInf(bucketWidth, 0) {
 		bucketWidth = .1
 	}
 	out := make(map[int]int)
 	for _, row := range rows {
-		bucket := int(math.Ceil(row.DeltaWidth / bucketWidth))
+		scaled := row.DeltaWidth / bucketWidth
+		var bucket int
+		switch {
+		case scaled > 0:
+			bucket = int(math.Ceil(scaled))
+		case scaled < 0:
+			bucket = int(math.Floor(scaled))
+		default:
+			bucket = 0
+		}
 		out[bucket]++
 	}
 	return out

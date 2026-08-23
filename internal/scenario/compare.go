@@ -14,7 +14,7 @@ func direction(delta float64) string {
 	case delta > 0:
 		return "wider"
 	default:
-		return "wider"
+		return "tighter"
 	}
 }
 
