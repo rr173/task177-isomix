@@ -21,7 +21,9 @@ func Assess(bounds map[string]model.Range, now func() time.Time) Summary {
 	} else if average >= .7 {
 		interpretation = "most sources are well constrained"
 	}
-	return Summary{Points: points, Average: average, Lowest: lowest, Highest: highest, Spread: lowest - highest, Interpretation: interpretation, GeneratedAt: now().UTC()}
+	// Spread 用最高-最低置信度，保证恒非负：避免负中心测量在排序后
+	// 让 lowest>highest 的反向 spread 暴露为负值。
+	return Summary{Points: points, Average: average, Lowest: lowest, Highest: highest, Spread: highest - lowest, Interpretation: interpretation, GeneratedAt: now().UTC()}
 }
 
 // Merge combines two summaries while preserving the stronger confidence per ID.

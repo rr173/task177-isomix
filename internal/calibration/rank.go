@@ -8,7 +8,9 @@ import (
 )
 
 func relativeWidth(r model.Range) float64 {
-	center := (r.Lo + r.Hi) / 2
+	// 零中心或负中心（如同位素 δ 值近 0）的测量必须以绝对中心为基准计算
+	// 相对宽度，否则负中心被误判为「近零」而回退到绝对宽度，丢失归一化。
+	center := math.Abs((r.Lo + r.Hi) / 2)
 	if center <= 1e-12 {
 		return math.Max(0, r.Width())
 	}
