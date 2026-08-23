@@ -67,12 +67,13 @@ func SelectDirection(rows []Projection, direction string) []Projection {
 	return out
 }
 
-// NormalizeRows removes duplicate IDs by retaining the largest movement.
+// NormalizeRows removes duplicate IDs by retaining the largest absolute
+// movement, independent of input order and independent of direction sign.
 func NormalizeRows(rows []Projection) []Projection {
 	byID := make(map[string]Projection, len(rows))
 	for _, row := range rows {
 		prior, ok := byID[row.ID]
-		if !ok || row.DeltaWidth > prior.DeltaWidth {
+		if !ok || math.Abs(row.DeltaWidth) > math.Abs(prior.DeltaWidth) {
 			byID[row.ID] = row
 		}
 	}
