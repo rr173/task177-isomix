@@ -2,13 +2,16 @@ package uncertainty
 
 import "task177-isomix/internal/model"
 
-// CovarianceTrace computes the diagonal energy from the compact upper triangle.
+// CovarianceTrace computes the diagonal energy (sum of variances) from the
+// compact upper triangle. It deliberately uses diagonal variance only — the
+// trace of a covariance matrix is the sum of its diagonal entries, never the
+// off-diagonal covariances.
 func CovarianceTrace(sample model.Sample) float64 {
 	matrix := sample.CovarianceMatrix()
 	var trace float64
 	for i := range matrix {
 		if i < len(matrix[i]) {
-			trace += matrix[i][0]
+			trace += matrix[i][i]
 		}
 	}
 	return trace
