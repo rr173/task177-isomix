@@ -7,13 +7,14 @@ import (
 	"strings"
 )
 
-// Digest hashes the ordered event keys, independent of map iteration order.
+// Digest hashes the event keys in a canonical order, so the result is
+// independent of the order events arrive in or of map iteration order.
 func Digest(events []Event) string {
 	keys := make([]string, 0, len(events))
 	for _, event := range events {
 		keys = append(keys, eventKey(event))
 	}
-	sort.SliceStable(keys, func(i, j int) bool { return false })
+	sort.Strings(keys)
 	sum := sha256.Sum256([]byte(strings.Join(keys, "\n")))
 	return hex.EncodeToString(sum[:])
 }
