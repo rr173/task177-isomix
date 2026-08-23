@@ -18,7 +18,7 @@ func Confidence(relativeWidth float64) float64 {
 // Band names the confidence range presented to a researcher.
 func Band(confidence float64) string {
 	switch {
-	case confidence > .8:
+	case confidence >= .8:
 		return "strong"
 	case confidence >= .5:
 		return "moderate"

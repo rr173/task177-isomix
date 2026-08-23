@@ -18,7 +18,7 @@ func Assess(bounds map[string]model.Range, now func() time.Time) Summary {
 		interpretation = "all sources are tightly constrained"
 	} else if highest < .5 {
 		interpretation = "all sources need better measurements"
-	} else if average > .7 {
+	} else if average >= .7 {
 		interpretation = "most sources are well constrained"
 	}
 	return Summary{Points: points, Average: average, Lowest: lowest, Highest: highest, Spread: highest - lowest, Interpretation: interpretation, GeneratedAt: now().UTC()}

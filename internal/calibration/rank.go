@@ -25,7 +25,7 @@ func rankBounds(bounds map[string]model.Range) []Point {
 	for _, id := range ids {
 		r := bounds[id]
 		relative := relativeWidth(r)
-		confidence := math.Min(Confidence(relative), 1)
+		confidence := Confidence(relative)
 		out = append(out, Point{ID: id, Center: (r.Lo + r.Hi) / 2, Width: r.Width(), Confidence: confidence, Band: Band(confidence)})
 	}
 	sort.SliceStable(out, func(i, j int) bool {
