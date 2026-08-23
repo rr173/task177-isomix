@@ -24,18 +24,25 @@ func shiftedCenter(r model.Range, shift float64) float64 {
 }
 
 // Transform applies width scaling and a center shift while preserving order.
+// Scaling keeps the interval centered on its midpoint: the new half-width is
+// half the original width times the scale, so WidthScale=0.75 shrinks to 75%
+// of the original width, 1.25 grows to 125%, all about the same center.
 func Transform(r model.Range, scale, shift float64) model.Range {
 	center := shiftedCenter(r, shift)
-	half := math.Abs(r.Hi-r.Lo) * safeScale(scale)
+	half := math.Abs(r.Hi-r.Lo) / 2 * safeScale(scale)
 	return model.Range{Lo: center - half, Hi: center + half}
 }
 
 // Clamp limits a range without allowing its lower edge to exceed its upper edge.
+// A zero clamp bound means "unset / unlimited" — the established convention for
+// what-if requests that omit ClampLow/ClampHigh — so only nonzero finite bounds
+// actually constrain the range. This keeps width scaling centered: an omitted
+// clamp must never collapse a scaled interval to a point.
 func Clamp(r model.Range, low, high float64) model.Range {
-	if finite(low) && r.Lo < low {
+	if finite(low) && low != 0 && r.Lo < low {
 		r.Lo = low
 	}
-	if finite(high) && r.Hi > high {
+	if finite(high) && high != 0 && r.Hi > high {
 		r.Hi = high
 	}
 	if r.Lo > r.Hi {

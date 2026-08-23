@@ -36,7 +36,9 @@ func Compare(base, projected map[string]model.Range) []Projection {
 	for _, id := range ordered {
 		before := normalize(base[id])
 		after := normalize(projected[id])
-		delta := width(before) - width(after)
+		// DeltaWidth is signed movement: wider is positive, tighter is negative,
+		// matching the direction() label and the downstream "signed movement" reports.
+		delta := width(after) - width(before)
 		out = append(out, Projection{ID: id, BaselineLow: before.Lo, BaselineHigh: before.Hi, ProjectedLow: after.Lo, ProjectedHigh: after.Hi, DeltaWidth: delta, Direction: direction(delta)})
 	}
 	return out
