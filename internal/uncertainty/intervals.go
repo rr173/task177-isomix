@@ -16,9 +16,11 @@ func intervalStats(values map[string]model.Range) (mean, maxRelative float64, na
 	for _, name := range names {
 		r := values[name]
 		mean += math.Max(0, r.Width())
+		// 以零为中心的区间（如比值接近 0）无法定义相对宽度，
+		// 需退化为绝对宽度，避免除零导致相对宽度膨胀为 +Inf/NaN。
 		center := math.Abs((r.Lo + r.Hi) / 2)
 		rel := r.Width()
-		if center >= -1e-12 {
+		if center > 1e-12 {
 			rel = r.Width() / center
 		}
 		if rel > maxRelative {
