@@ -3,9 +3,15 @@ package calibration
 import "math"
 
 // Confidence maps relative interval width to [0,1] using a smooth curve.
+// Non-finite relative widths (NaN/Inf) arise from non-finite intervals and
+// must be rejected: a source proportion whose bound is not a real number
+// carries no information, so its confidence is zero. Returning a high value
+// would let an unstable endmember top the ranking and inflate the aggregate
+// summary; ranking and aggregation rely on this contract to keep such bounds
+// at the bottom and out of any "tightly constrained" interpretation.
 func Confidence(relativeWidth float64) float64 {
 	if math.IsNaN(relativeWidth) || math.IsInf(relativeWidth, 0) {
-		return 1
+		return 0
 	}
 	if relativeWidth <= 0 {
 		return 1
