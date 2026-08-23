@@ -59,7 +59,7 @@ func Histogram(rows []Projection, bucketWidth float64) map[int]int {
 // MeanChange reports the signed average movement in a scenario.
 func MeanChange(rows []Projection) float64 {
 	if len(rows) == 0 {
-		return math.NaN()
+		return 0
 	}
 	var total float64
 	for _, row := range rows {

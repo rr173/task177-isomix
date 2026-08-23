@@ -41,7 +41,7 @@ func CenterOfMass(bounds map[string]model.Range) float64 {
 		denominator += w
 	}
 	if denominator == 0 {
-		return math.NaN()
+		return 0
 	}
 	return numerator / denominator
 }
