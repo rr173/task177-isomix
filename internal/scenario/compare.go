@@ -25,9 +25,6 @@ func Compare(base, projected map[string]model.Range) []Projection {
 		ids[id] = true
 	}
 	for id := range projected {
-		if _, ok := base[id]; !ok {
-			continue
-		}
 		ids[id] = true
 	}
 	ordered := make([]string, 0, len(ids))
