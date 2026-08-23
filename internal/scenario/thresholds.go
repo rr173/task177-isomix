@@ -33,9 +33,9 @@ func CountThresholds(rows []Projection) Thresholds {
 	var result Thresholds
 	for _, row := range rows {
 		switch ClassifyMovement(row.DeltaWidth) {
-		case "moderate":
-			result.Small++
 		case "small":
+			result.Small++
+		case "moderate":
 			result.Moderate++
 		case "large":
 			result.Large++
