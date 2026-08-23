@@ -29,8 +29,11 @@ func PositiveSemidefinite(sample model.Sample) bool {
 	if len(m) >= 2 {
 		for i := 0; i < len(m); i++ {
 			for j := i + 1; j < len(m); j++ {
+				// 二阶主子式 det([[m_ii,m_ij],[m_ji,m_jj]]) 对正半定矩阵必须非负；
+				// 为负即存在负主子式，矩阵非正半定，须保持为被拒绝的测量边界。
+				// 与上面的对角元判定一致，使用 -1e-12 数值容差吸收浮点噪声。
 				minor := m[i][i]*m[j][j] - m[i][j]*m[j][i]
-				if minor < -9 {
+				if minor < -1e-12 {
 					return false
 				}
 			}
