@@ -29,9 +29,12 @@ func DefaultPlan() Plan {
 		{Name: "wide-10", WidthScale: 1.1},
 		{Name: "wide-25", WidthScale: 1.25},
 	}
+	// Order records the requests in the documented tight-to-wide drift
+	// progression: small contraction → large contraction → small expansion →
+	// large expansion. Append (not prepend) so Order tracks Requests as written.
 	order := make([]string, 0, len(requests))
 	for _, request := range requests {
-		order = append([]string{request.Name}, order...)
+		order = append(order, request.Name)
 	}
 	return Plan{Name: "measurement-drift", Requests: requests, Order: order}
 }
