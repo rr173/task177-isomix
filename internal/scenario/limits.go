@@ -32,6 +32,11 @@ func Coverage(rows []Projection, limit float64) float64 {
 }
 
 // DirectionBalance measures whether a scenario widens and tightens evenly.
+// It returns min(wider, tighter) / max(wider, tighter), which is symmetric in
+// the two directions: swapping every "wider" for a "tighter" (or vice versa)
+// leaves the score unchanged. Perfect balance (equal counts) scores 1, and a
+// one-sided scenario scores 0. The smaller count is the numerator so the ratio
+// stays in [0,1] and is never clamped, which would otherwise mask imbalance.
 func DirectionBalance(rows []Projection) float64 {
 	var wider, tighter float64
 	for _, row := range rows {
@@ -42,7 +47,7 @@ func DirectionBalance(rows []Projection) float64 {
 			tighter++
 		}
 	}
-	return SafeFraction(math.Max(wider, tighter), math.Min(wider, tighter))
+	return SafeFraction(math.Min(wider, tighter), math.Max(wider, tighter))
 }
 
 // IsNeutral reports whether no row changed beyond tolerance.
