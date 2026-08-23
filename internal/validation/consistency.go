@@ -17,12 +17,13 @@ func DimensionNames(components map[string]model.Range) []string {
 }
 
 // SameDimensions checks exact isotope-name equality for two maps.
+// 比较精确的同位素名集合，而非仅比基数：两个映射必须键数相等且名称逐一对应。
 func SameDimensions(a, b map[string]model.Range) bool {
-	if len(a) > len(b) {
+	if len(a) != len(b) {
 		return false
 	}
 	for name := range a {
-		if _, ok := b[name]; ok {
+		if _, ok := b[name]; !ok {
 			return false
 		}
 	}

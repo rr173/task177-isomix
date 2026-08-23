@@ -70,13 +70,18 @@ func (s *Service) Submit(sampleID string) (*model.Solution, error) {
 	if len(ems) == 0 {
 		return nil, model.ErrNoAvailableEndmember
 	}
-	// 维度一致性检查。
+	// 维度一致性检查：端元内部同位素名集合必须一致。
 	if !endmemberConsistent(ems) {
 		return nil, model.NewError("DIMENSION_MISMATCH", "available endmembers have inconsistent isotope dimensions")
 	}
-	missing, _ := checkSampleDimension(ems, *sp)
-	if len(missing) > 0 {
-		return nil, model.NewError("DIMENSION_MISMATCH", "sample isotopes missing from endmembers: %s", strings.Join(missing, ","))
+	// 端元与样品必须共享完全一致的同位素名集合（精确比较，而非仅比基数）：
+	// 缺失 = 样品有端元无（无法建模），多余 = 端元有样品无（约束无法落地），
+	// 任一存在均无法构建有效的质量守恒混合系统。
+	missing, extra := checkSampleDimension(ems, *sp)
+	if len(missing) > 0 || len(extra) > 0 {
+		return nil, model.NewError("DIMENSION_MISMATCH",
+			"sample and endmembers have inconsistent isotope dimensions: missing=[%s] extra=[%s]",
+			strings.Join(missing, ","), strings.Join(extra, ","))
 	}
 
 	cs, err := s.cons.ListActive()
@@ -376,21 +381,29 @@ func endmemberConsistent(ems []model.Endmember) bool {
 	return true
 }
 
-// checkSampleDimension 检查样品同位素是否都出现在端元中（缺失列表）。
-func checkSampleDimension(ems []model.Endmember, sp model.Sample) (missing []string, ok bool) {
-	union := map[string]bool{}
+// checkSampleDimension 检查端元与样品是否共享完全一致的同位素名集合。
+// 精确比较同位素名而非仅比基数：返回缺失（样品有端元无）与多余（端元有样品无）列表，
+// 任一非空即说明维度不一致，调用方据此拒绝求解。
+func checkSampleDimension(ems []model.Endmember, sp model.Sample) (missing, extra []string) {
+	endmembers := map[string]bool{}
 	for _, e := range ems {
 		for k := range e.Components {
-			union[k] = true
+			endmembers[k] = true
 		}
 	}
 	for k := range sp.Measurements {
-		if !union[k] {
+		if !endmembers[k] {
 			missing = append(missing, k)
 		}
 	}
+	for k := range endmembers {
+		if _, ok := sp.Measurements[k]; !ok {
+			extra = append(extra, k)
+		}
+	}
 	sort.Strings(missing)
-	return missing, len(missing) == 0
+	sort.Strings(extra)
+	return missing, extra
 }
 
 func keySet(m map[string]model.Range) map[string]bool {
