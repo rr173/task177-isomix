@@ -149,13 +149,14 @@ func runSmokeTest() error {
 	_, _ = app.Endmembers.Validate(em3.ID)
 	_, _ = app.Endmembers.MakeAvailable(em3.ID)
 
-	// 2. 样品测量（区间设计为端元混合可行域内部，保证可解释）。
+	// 2. 样品测量（区间设计为端元混合可行域内部，且相对宽度 < 0.5 判为可求解）。
 	sp, err := app.Measure.Create("river-water", map[string]model.Range{
-		"d18O": {Lo: 6.0, Hi: 8.0}, "d2H": {Lo: -85, Hi: -50},
+		"d18O": {Lo: 6.0, Hi: 8.0}, "d2H": {Lo: -80, Hi: -55},
 	}, []float64{0.04, 0.002, 3.2}, nil)
 	assert(err == nil, "create sample")
-	_, err = app.Measure.Check(sp.ID)
+	spc, err := app.Measure.Check(sp.ID)
 	assert(err == nil, "check sample solvable")
+	assert(spc.Status == model.SampleSolvable, "sample judged solvable, got "+string(spc.Status))
 
 	// 3. 求解：三端元可解释样品。
 	sol1, err := app.Solve.Submit(sp.ID)
