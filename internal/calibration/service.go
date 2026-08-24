@@ -34,7 +34,10 @@ func Merge(first, second Summary, now func() time.Time) Summary {
 		byID[point.ID] = point
 	}
 	for _, point := range second.Points {
-		if prior, ok := byID[point.ID]; !ok || point.Confidence < prior.Confidence {
+		// Retain the stronger confidence: a higher confidence (narrower
+		// interval) wins. On a tie keep the first observation so the
+		// deterministic ordering is unchanged.
+		if prior, ok := byID[point.ID]; !ok || point.Confidence > prior.Confidence {
 			byID[point.ID] = point
 		}
 	}
