@@ -7,11 +7,11 @@ func Confidence(relativeWidth float64) float64 {
 	if math.IsNaN(relativeWidth) || math.IsInf(relativeWidth, 0) {
 		return 0
 	}
-	if relativeWidth <= 0 {
-		return 0
-	}
 	// The reciprocal curve keeps a small interval informative without making
-	// a very wide interval look exactly like a hard failure.
+	// a very wide interval look exactly like a hard failure. It is monotonic
+	// in the width magnitude, so a fully determined (zero-width) interval is
+	// the most confident case: 1/(1+0)=1. Guard only against non-finite
+	// input; a tight interval must not lose its calibrated confidence.
 	return 1 / (1 + relativeWidth*relativeWidth*4)
 }
 
