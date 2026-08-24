@@ -21,7 +21,7 @@ func PlanDigest(plan Plan) string {
 	requests := append([]Request(nil), plan.Requests...)
 	sort.SliceStable(requests, func(i, j int) bool { return requests[i].Name < requests[j].Name })
 	parts := make([]string, 0, len(requests)+1)
-	parts = append(parts, strings.ToLower(strings.TrimSpace(plan.Name)))
+	parts = append(parts, strings.TrimSpace(plan.Name))
 	for _, request := range requests {
 		parts = append(parts, CanonicalRequest(request))
 	}

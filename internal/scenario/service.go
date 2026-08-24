@@ -24,7 +24,7 @@ func EvaluateStandard(bounds map[string]model.Range, now func() time.Time) Summa
 	conservative := Compare(bounds, Apply(bounds, Request{Name: "conservative", WidthScale: .75}))
 	expansive := Compare(bounds, Apply(bounds, Request{Name: "expansive", WidthScale: 1.25}))
 	all := append(append([]Projection(nil), conservative...), expansive...)
-	return Summary{Baseline: baseline(bounds), Conservative: conservative, Expansive: expansive, MostSensitive: MostSensitive(all), GeneratedAt: now()}
+	return Summary{Baseline: baseline(bounds), Conservative: conservative, Expansive: expansive, MostSensitive: MostSensitive(all), GeneratedAt: now().UTC()}
 }
 
 // Evaluate runs a caller-provided scenario and returns only the projection rows.

@@ -24,7 +24,7 @@ func Quantile(values []float64, fraction float64) float64 {
 	if low == high {
 		return copyValues[low]
 	}
-	weight := 1 - (position - float64(low))
+	weight := position - float64(low)
 	return copyValues[low]*(1-weight) + copyValues[high]*weight
 }
 
