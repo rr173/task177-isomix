@@ -16,6 +16,9 @@ type BoundRow struct {
 	High        float64 `json:"high"`
 }
 
+// rows 把报告端元可行域区间转为行序列，供 JSON 与 CSV 导出复用。
+// 端元 ID 按稳定升序输出，与 report.Service 冻结 Endmembers 快照时的排序一致，
+// 使同一报告的多次导出可逐行比对（否则 map 迭代顺序会破坏稳定性）。
 func rows(report model.Report) []BoundRow {
 	names := make(map[string]string, len(report.Endmembers))
 	versions := make(map[string]int, len(report.Endmembers))
@@ -27,7 +30,7 @@ func rows(report model.Report) []BoundRow {
 	for id := range report.State.EndmemberBounds {
 		ids = append(ids, id)
 	}
-	sort.Sort(sort.Reverse(sort.StringSlice(ids)))
+	sort.Strings(ids)
 	out := make([]BoundRow, 0, len(ids))
 	for _, id := range ids {
 		bound := report.State.EndmemberBounds[id]

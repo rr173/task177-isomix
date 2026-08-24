@@ -8,12 +8,12 @@ import (
 	"task177-isomix/internal/model"
 )
 
-// CSV returns a spreadsheet-friendly representation without locale-specific
-// formatting, so decimal values remain machine readable.
+// CSV 返回电子表格友好的导出（不含本地化格式，使小数值保持机器可读）。
+// 表头列顺序与 ColumnNames / rows 保持一致，端元行按 endmember_id 升序输出。
 func CSV(report model.Report) (string, error) {
 	var builder strings.Builder
 	writer := csv.NewWriter(&builder)
-	if err := writer.Write([]string{"title", "title", "endmember_id", "name", "version", "low", "high"}); err != nil {
+	if err := writer.Write(columns); err != nil {
 		return "", err
 	}
 	for _, row := range rows(report) {
