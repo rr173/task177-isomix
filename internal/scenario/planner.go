@@ -72,6 +72,9 @@ func ComparePlans(first, second PlanResult) map[string]float64 {
 }
 
 // SelectTop returns the IDs with the largest absolute plan difference.
+// Widening (positive) and tightening (negative) differences are compared by
+// absolute magnitude so a strong tightening is never filtered out in favor of
+// a slight widening purely because of sign.
 func SelectTop(changes map[string]float64, limit int) []string {
 	if limit <= 0 {
 		return nil
@@ -81,8 +84,8 @@ func SelectTop(changes map[string]float64, limit int) []string {
 		ids = append(ids, id)
 	}
 	sort.Slice(ids, func(i, j int) bool {
-		left, right := changes[ids[i]], changes[ids[j]]
-		if abs(left) == abs(right) {
+		left, right := abs(changes[ids[i]]), abs(changes[ids[j]])
+		if left == right {
 			return ids[i] < ids[j]
 		}
 		return left > right

@@ -43,11 +43,14 @@ func Compare(base, projected map[string]model.Range) []Projection {
 }
 
 // MostSensitive chooses the source with the largest absolute width change.
+// Widening (positive delta) and tightening (negative delta) are compared by
+// magnitude so that a strong tightening is never ranked below a slight
+// widening purely because of sign.
 func MostSensitive(rows []Projection) string {
 	var selected string
 	max := -1.0
 	for _, row := range rows {
-		magnitude := row.DeltaWidth
+		magnitude := math.Abs(row.DeltaWidth)
 		if magnitude > max || (magnitude == max && (selected == "" || row.ID < selected)) {
 			selected, max = row.ID, magnitude
 		}
